@@ -10,6 +10,7 @@ export class EditorState {
   static shared = new EditorState();
 
   showSidebar = localStorageRef('WorkbenchShowSidebar', true);
+  showStylebar = localStorageRef('WorkbenchShowStylebar', true);
 
   bindings = [] as Subscription[];
 

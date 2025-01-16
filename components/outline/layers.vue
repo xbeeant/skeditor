@@ -1,5 +1,6 @@
 <template>
   <div class="layers">
+    <Search />
     <RecycleScroller
       ref="scrollerRef"
       class="scroller"
@@ -24,6 +25,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import Search from './search.vue';
 import { ref, computed, watch, nextTick } from 'vue';
 import { RecycleScroller } from 'vue-virtual-scroller';
 import { userPerfectScrollbar } from '~/components/ui/scrollbar-composable';

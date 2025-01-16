@@ -14,6 +14,7 @@ import type {
   ParagraphStyle as SkParagraphStyle,
 } from '@skeditor/canvaskit-wasm';
 import invariant from 'ts-invariant';
+import { AnyObject } from '@sketch-hq/sketch-file-format-ts/dist/esm/types';
 
 export const enum ClassValue {
   // GeneralObject = 'GeneralObject',
@@ -109,7 +110,7 @@ export abstract class SkyBaseLayer<T extends SketchFormat.AnyLayer = SketchForma
   isFlippedHorizontal = false;
   isFlippedVertical = false;
   rotation = 0;
-
+  json!: AnyObject;
   style?: SkyStyle;
 
   private _sharedStyleID?: string;
@@ -147,6 +148,7 @@ export abstract class SkyBaseLayer<T extends SketchFormat.AnyLayer = SketchForma
   }
 
   fromJson(data: T) {
+    this.json = data;
     const { frame, isFlippedHorizontal, isFlippedVertical, rotation, sharedStyleID } = data;
     this.booleanOperation = mapBooleanOp(data.booleanOperation);
 

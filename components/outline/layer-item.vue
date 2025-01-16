@@ -76,10 +76,10 @@ const spacingStyle = computed(() => ({
 }
 
 .layer-item.selected {
-  background-color: #a5a5a5;
+  background-color: rgb(204, 232, 254);
 }
 .layer-item.subselected {
-  background-color: #a5a5a556;
+  background-color: rgba(204, 232, 254, 0.8);
   border-radius: 0px;
 }
 .layer-item.invisible,

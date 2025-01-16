@@ -1,6 +1,6 @@
 <template>
   <div class="pages" :style="`height: ${height}px;`">
-    <div class="bar">页面</div>
+    <div class="bar">页面: {{ pagesRef.length || 0 }}</div>
     <hr />
     <PerfectScrollbar>
       <div
@@ -57,11 +57,8 @@ const { height, onDragStart, onOffset } = setupPages();
 }
 
 .page-item__active {
-  background-color: black;
-  color: white;
-}
-.page-item:hover {
-  /* background-color: #cbccd9; */
+  background-color: rgb(204, 232, 254);
+  color: #000000;
 }
 
 hr {
