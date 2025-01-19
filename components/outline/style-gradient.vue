@@ -1,11 +1,22 @@
 <script setup lang="ts">
-import { FillType } from '@sketch-hq/sketch-file-format-ts/dist/esm/types';
+import { AnyLayer, FillType } from '@sketch-hq/sketch-file-format-ts/dist/esm/types';
 import Color from '~/components/outline/style-color.vue';
-import { SkyFill } from '~/lib/editor/model';
-const props = defineProps<{ fills: SkyFill[] }>();
-const fills = props.fills || [];
+import { SkyBaseLayer, SkyFill } from '~/lib/editor/model';
+import { EditorState } from '~/components/editor-state';
+import { nextTick, ref, watch } from 'vue';
 
-console.log('fills' , props);
+const { selectedLayerIdRef } = EditorState.shared;
+const model = ref<SkyBaseLayer<AnyLayer> | undefined>();
+const fills = ref<SkyFill[] | undefined>();
+
+watch(selectedLayerIdRef, () => {
+  nextTick(() => {
+    model.value = EditorState.shared.selectedLayerModel;
+    if (model.value) {
+      fills.value = model.value.style?.fills || [];
+    }
+  });
+});
 </script>
 
 <template>
@@ -59,7 +70,7 @@ dl.item {
 }
 
 dl.item > dt {
-  width: 72px;
+  min-width: 32px;
   white-space: nowrap;
   height: 22px;
   line-height: 22px;

@@ -1,14 +1,15 @@
 import { Matrix } from './matrix';
 import { ObservablePoint } from './observable-point';
+
 /**
- * Transform that takes care about its versions
+ * 负责处理其版本的变换类。
  *
  * @class
  * @memberof PIXI
  */
 export class Transform {
   /**
-   * A default (identity) transform
+   * 默认（单位）变换。
    *
    * @static
    * @constant
@@ -16,147 +17,144 @@ export class Transform {
    */
   public static readonly IDENTITY = new Transform();
 
+  /**
+   * 世界变换矩阵。
+   *
+   * @member {PIXI.Matrix}
+   */
   public worldTransform: Matrix;
-  public localTransform: Matrix;
-  public position: ObservablePoint;
-  public scale: ObservablePoint;
-  public pivot: ObservablePoint;
-  public skew: ObservablePoint;
-  public _parentID: number;
-  _worldID: number;
 
+  /**
+   * 局部变换矩阵。
+   *
+   * @member {PIXI.Matrix}
+   */
+  public localTransform: Matrix;
+
+  /**
+   * 对象相对于父级局部坐标的坐标。
+   *
+   * @member {PIXI.ObservablePoint}
+   */
+  public position: ObservablePoint;
+
+  /**
+   * 对象的缩放因子。
+   *
+   * @member {PIXI.ObservablePoint}
+   */
+  public scale: ObservablePoint;
+
+  /**
+   * 显示对象旋转的中心点（枢轴点）。
+   *
+   * @member {PIXI.ObservablePoint}
+   */
+  public pivot: ObservablePoint;
+
+  /**
+   * 对象在 x 和 y 轴上的倾斜量。
+   *
+   * @member {PIXI.ObservablePoint}
+   */
+  public skew: ObservablePoint;
+
+  /**
+   * 父级世界变换的唯一本地 ID，用于计算当前世界变换矩阵。
+   *
+   * @protected
+   * @member {number}
+   */
+  private _parentID: number;
+
+  /**
+   * 世界变换的唯一本地 ID。
+   *
+   * @protected
+   * @member {number}
+   */
+  private _worldID: number;
+
+  /**
+   * 旋转角度。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _rotation: number;
+
+  /**
+   * 局部 X 轴的标准化 X 坐标值（不带缩放），即局部变换矩阵的第一列。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _cx: number;
+
+  /**
+   * 局部 X 轴的标准化 Y 坐标值（不带缩放），即局部变换矩阵的第一列。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _sx: number;
+
+  /**
+   * 局部 Y 轴的标准化 X 坐标值（不带缩放），即局部变换矩阵的第二列。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _cy: number;
+
+  /**
+   * 局部 Y 轴的标准化 Y 坐标值（不带缩放），即局部变换矩阵的第二列。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _sy: number;
+
+  /**
+   * 局部变换的唯一本地 ID。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _localID: number;
+
+  /**
+   * 当前用于计算局部变换矩阵的唯一本地 ID。
+   *
+   * @protected
+   * @member {number}
+   */
   protected _currentLocalID: number;
 
+  /**
+   * 构造函数，初始化变换对象。
+   */
   constructor() {
-    /**
-     * The world transformation matrix.
-     *
-     * @member {PIXI.Matrix}
-     */
     this.worldTransform = new Matrix();
-
-    /**
-     * The local transformation matrix.
-     *
-     * @member {PIXI.Matrix}
-     */
     this.localTransform = new Matrix();
-
-    /**
-     * The coordinate of the object relative to the local coordinates of the parent.
-     *
-     * @member {PIXI.ObservablePoint}
-     */
     this.position = new ObservablePoint(this.onChange, this, 0, 0);
-
-    /**
-     * The scale factor of the object.
-     *
-     * @member {PIXI.ObservablePoint}
-     */
     this.scale = new ObservablePoint(this.onChange, this, 1, 1);
-
-    /**
-     * The pivot point of the displayObject that it rotates around.
-     *
-     * @member {PIXI.ObservablePoint}
-     */
     this.pivot = new ObservablePoint(this.onChange, this, 0, 0);
-
-    /**
-     * The skew amount, on the x and y axis.
-     *
-     * @member {PIXI.ObservablePoint}
-     */
     this.skew = new ObservablePoint(this.updateSkew, this, 0, 0);
 
-    /**
-     * The rotation amount.
-     *
-     * @protected
-     * @member {number}
-     */
     this._rotation = 0;
-
-    /**
-     * The X-coordinate value of the normalized local X axis,
-     * the first column of the local transformation matrix without a scale.
-     *
-     * @protected
-     * @member {number}
-     */
     this._cx = 1;
-
-    /**
-     * The Y-coordinate value of the normalized local X axis,
-     * the first column of the local transformation matrix without a scale.
-     *
-     * @protected
-     * @member {number}
-     */
     this._sx = 0;
-
-    /**
-     * The X-coordinate value of the normalized local Y axis,
-     * the second column of the local transformation matrix without a scale.
-     *
-     * @protected
-     * @member {number}
-     */
     this._cy = 0;
-
-    /**
-     * The Y-coordinate value of the normalized local Y axis,
-     * the second column of the local transformation matrix without a scale.
-     *
-     * @protected
-     * @member {number}
-     */
     this._sy = 1;
-
-    /**
-     * The locally unique ID of the local transform.
-     *
-     * @protected
-     * @member {number}
-     */
     this._localID = 0;
-
-    /**
-     * The locally unique ID of the local transform
-     * used to calculate the current local transformation matrix.
-     *
-     * @protected
-     * @member {number}
-     */
     this._currentLocalID = 0;
-
-    /**
-     * The locally unique ID of the world transform.
-     *
-     * @protected
-     * @member {number}
-     */
     this._worldID = 0;
-
-    /**
-     * The locally unique ID of the parent's world transform
-     * used to calculate the current world transformation matrix.
-     *
-     * @protected
-     * @member {number}
-     */
     this._parentID = 0;
   }
 
   /**
-   * Called when a value changes.
+   * 当属性值发生变化时调用。
    *
    * @protected
    */
@@ -165,7 +163,7 @@ export class Transform {
   }
 
   /**
-   * Called when the skew or the rotation changes.
+   * 当倾斜或旋转发生变化时调用。
    *
    * @protected
    */
@@ -179,6 +177,11 @@ export class Transform {
   }
 
   // #if _DEBUG
+  /**
+   * 返回变换对象的字符串表示形式，用于调试。
+   *
+   * @returns 变换对象的字符串表示形式。
+   */
   toString(): string {
     return (
       `[@pixi/math:Transform ` +
@@ -192,13 +195,13 @@ export class Transform {
   // #endif
 
   /**
-   * Updates the local transformation matrix.
+   * 更新局部变换矩阵。
    */
   updateLocalTransform(): void {
     const lt = this.localTransform;
 
     if (this._localID !== this._currentLocalID) {
-      // get the matrix values of the displayobject based on its transform properties..
+      // 根据变换属性设置显示对象的矩阵值。
       lt.a = this._cx * this.scale.x;
       lt.b = this._sx * this.scale.x;
       lt.c = this._cy * this.scale.y;
@@ -208,21 +211,21 @@ export class Transform {
       lt.ty = this.position.y - (this.pivot.x * lt.b + this.pivot.y * lt.d);
       this._currentLocalID = this._localID;
 
-      // force an update..
+      // 强制更新。
       this._parentID = -1;
     }
   }
 
   /**
-   * Updates the local and the world transformation matrices.
+   * 更新局部和世界变换矩阵。
    *
-   * @param {PIXI.Transform} parentTransform - The parent transform
+   * @param parentTransform - 父级变换对象。
    */
   updateTransform(parentTransform: Transform): void {
     const lt = this.localTransform;
 
     if (this._localID !== this._currentLocalID) {
-      // get the matrix values of the displayobject based on its transform properties..
+      // 根据变换属性设置显示对象的矩阵值。
       lt.a = this._cx * this.scale.x;
       lt.b = this._sx * this.scale.x;
       lt.c = this._cy * this.scale.y;
@@ -232,12 +235,12 @@ export class Transform {
       lt.ty = this.position.y - (this.pivot.x * lt.b + this.pivot.y * lt.d);
       this._currentLocalID = this._localID;
 
-      // force an update..
+      // 强制更新。
       this._parentID = -1;
     }
 
     if (this._parentID !== parentTransform._worldID) {
-      // concat the parent matrix with the objects transform.
+      // 将父级矩阵与对象的变换矩阵相乘。
       const pt = parentTransform.worldTransform;
       const wt = this.worldTransform;
 
@@ -250,15 +253,15 @@ export class Transform {
 
       this._parentID = parentTransform._worldID;
 
-      // update the id of the transform..
+      // 更新变换的 ID。
       this._worldID++;
     }
   }
 
   /**
-   * Decomposes a matrix and sets the transforms properties based on it.
+   * 分解矩阵并根据其设置变换属性。
    *
-   * @param {PIXI.Matrix} matrix - The matrix to decompose
+   * @param matrix - 要分解的矩阵。
    */
   setFromMatrix(matrix: Matrix): void {
     matrix.decompose(this);
@@ -266,7 +269,7 @@ export class Transform {
   }
 
   /**
-   * The rotation of the object in radians.
+   * 获取对象的旋转角度（以弧度为单位）。
    *
    * @member {number}
    */
@@ -274,6 +277,11 @@ export class Transform {
     return this._rotation;
   }
 
+  /**
+   * 设置对象的旋转角度（以弧度为单位）。
+   *
+   * @param value - 新的旋转角度。
+   */
   set rotation(value: number) {
     if (this._rotation !== value) {
       this._rotation = value;

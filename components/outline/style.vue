@@ -51,7 +51,7 @@
         </dl>
       </section>
 
-      <StyleGradient :fills="fills" />
+      <StyleGradient />
 
       <section v-if="model._class === 'Text'">
         <section class="prop-box">
@@ -288,7 +288,7 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties dl.item > dt {
-  width: 72px;
+  min-width: 32px;
   white-space: nowrap;
   height: 22px;
   line-height: 22px;

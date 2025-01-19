@@ -21,16 +21,31 @@ export class Checkerboard {
   // 更低分辨率的 checkerboard
   low?: Checkerboard;
 
+  // 是否是阶梯分辨率
   isStair = false;
 
+  /**
+   * 构造函数
+   * @param tileManager 瓦片管理器
+   * @param scale 分辨率
+   */
   constructor(private tileManager: TileManager, public scale: number) {
+    // 判断是否是阶梯分辨率
     this.isStair = floorBinaryScale(scale) === scale;
   }
 
+  /**
+   * 清除当前分辨率下的所有瓦片
+   */
   clear() {
     this.tileManager.clearScaleTile(this.scale);
   }
 
+  /**
+   * 绘制指定瓦片
+   * @param x 瓦片x坐标
+   * @param y 瓦片y坐标
+   */
   drawTile(x: number, y: number) {
     const canvas = this.tileManager.canvas;
     const image = this.tileManager.getTile(this.scale, x, y);
@@ -39,9 +54,13 @@ export class Checkerboard {
     }
   }
 
-  // 返回值表示是否绘制成功
-  // 如果绘制失败可以要求更新 tile
-  // lower 的时候可以递归。 当然现在也可以先不做
+  /**
+   * 绘制其他分辨率的瓦片
+   * @param otherScale 其他分辨率
+   * @param x 瓦片x坐标
+   * @param y 瓦片y坐标
+   * @returns 是否绘制成功
+   */
   drawOtherScaleTile(otherScale: number, x: number, y: number): boolean {
     const toLower = otherScale > this.scale; // 借用低分辨率，是否是使用低分辨率绘制高分辨率内容
 
@@ -85,8 +104,10 @@ export class Checkerboard {
     return !missTile;
   }
 
-  // viewport 已经是像素单位了
-  //
+  /**
+   * 绘制视口
+   * @param viewport 视口区域
+   */
   drawViewport(viewport: Rect) {
     const { tileManager, scale } = this;
 
@@ -131,6 +152,11 @@ export class Checkerboard {
     }
   }
 
+  /**
+   * 调试绘制视口网格
+   * @param viewport 视口区域
+   * @param color 网格颜色
+   */
   debugDrawViewportGrids(viewport: Rect, color?: SkColor) {
     const { left, top, right, bottom } = new TileBounds().fromRect(viewport);
     for (let y = top; y < bottom; y++) {
