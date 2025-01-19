@@ -18,6 +18,9 @@
     <NavButton @click="onScaleUp">
       <ScaleUpIcon />
     </NavButton>
+    <NavButton @click="onToggleUnitbox">
+      <DeviceIcon :style="unitboxOpen" /> <span>{{ unit.name }}</span>
+    </NavButton>
     <NavButton @click="onToggleStylebar">
       <SidebarIcon :style="styleBarOpen ? 'transform:rotate(180deg);' : ''" />
     </NavButton>
@@ -27,6 +30,7 @@
 import { computed, watch } from 'vue';
 import NavButton from './nav-button.vue';
 import ScaleUpIcon from '~/assets/svg-comp/scale-up.svg';
+import DeviceIcon from '~/assets/svg-comp/device.svg';
 import ScaleDownIcon from '~/assets/svg-comp/scale-down.svg';
 import FileOpenIcon from '~/assets/svg-comp/file-open.svg';
 import SidebarIcon from '~/assets/svg-comp/sidebar.svg';
@@ -40,6 +44,8 @@ const emit = defineEmits<{
 
 const sideBarOpen = EditorState.shared.showSidebar;
 const styleBarOpen = EditorState.shared.showStylebar;
+const unitboxOpen = EditorState.shared.showUnitbox;
+const unit = EditorState.shared.unit;
 
 const { pick } = useSketchFilePicker((file) => emit('pick', file));
 const scaleRef = EditorState.shared.usePageScale();
@@ -63,12 +69,6 @@ function onScaleDown() {
 
 const title = computed(() => EditorState.shared.editorTitle);
 
-const paddingStyle = computed(() => {
-  return {
-    width: `${outlineLeftWidth.value}px`,
-  };
-});
-
 watch(useDropFile(), (file) => {
   if (file) {
     emit('pick', file);
@@ -81,6 +81,10 @@ function onToggleSidebar() {
 
 function onToggleStylebar() {
   styleBarOpen.value = !styleBarOpen.value;
+}
+
+function onToggleUnitbox() {
+  unitboxOpen.value = !unitboxOpen.value;
 }
 </script>
 

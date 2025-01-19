@@ -12,9 +12,11 @@ import type {
   Paint as SkPaint,
   Paragraph as SkParagraph,
   ParagraphStyle as SkParagraphStyle,
+  Color,
 } from '@skeditor/canvaskit-wasm';
 import invariant from 'ts-invariant';
 import { AnyObject } from '@sketch-hq/sketch-file-format-ts/dist/esm/types';
+import { TextBehaviour } from '@sketch-hq/sketch-file-format-ts/dist/cjs/types';
 
 export const enum ClassValue {
   // GeneralObject = 'GeneralObject',
@@ -514,8 +516,10 @@ export class SkyText extends SkyBaseLayer<SketchFormat.Text> {
   readonly _class = ClassValue.Text;
 
   private _attributedString!: SkyAttributeString;
+  textBehaviour!: TextBehaviour;
 
   _fromJson(data: SketchFormat.Text) {
+    this.textBehaviour = data.textBehaviour;
     this._attributedString = {
       // string 在老版本可能为空, 在 model 中应该保证数据类型准确。
       string: data.attributedString.string || '',
@@ -755,8 +759,10 @@ export class SkyFill extends SkyTintColorObject<SketchFormat.Fill> {
   contextSettings = new SkyGraphicsContextSettings();
   _gradient?: SkyGradient;
   image?: SkyFile;
+  json!: SketchFormat.Fill;
 
   fromJson(data: SketchFormat.Fill) {
+    this.json = data;
     this.isEnabled = data.isEnabled;
     this._color.fromJson(data.color);
     this.fillType = data.fillType;
@@ -796,8 +802,10 @@ export class SkyBorder extends SkyTintColorObject<SketchFormat.Border> {
   _gradient?: SkyGradient;
 
   contextSettings = new SkyGraphicsContextSettings();
+  json!: SketchFormat.Border;
 
   fromJson(data: SketchFormat.Border) {
+    this.json = data;
     this.isEnabled = data.isEnabled;
 
     this._color = this.color.fromJson(data.color);
@@ -833,6 +841,9 @@ export class SkyColor extends SkyBaseObject<SketchFormat.Color> {
   tintColor?: SkyColor;
 
   _skColor = sk.CanvasKit.TRANSPARENT;
+  json!: SketchFormat.Color;
+
+  swatchID?: string;
 
   get isEmpty() {
     return this._skColor[3] === 0;
@@ -855,6 +866,8 @@ export class SkyColor extends SkyBaseObject<SketchFormat.Color> {
   }
 
   fromJson(color: SketchFormat.Color) {
+    this.json = color;
+    this.swatchID = color.swatchID;
     this._skColor = sk.CanvasKit.Color(
       (color.red * 256) | 0,
       (color.green * 256) | 0,
@@ -928,6 +941,7 @@ export class SkyShadow extends SkyTintColorObject<SketchFormat.Shadow | SketchFo
   spread = 0;
 
   tintColor?: SkyColor;
+  json!: SketchFormat.Shadow | SketchFormat.InnerShadow;
 
   static create(color: SkColor, radius: number, offsetX = 0, offsetY = 0, spread = 0) {
     const ret = new SkyShadow();
@@ -944,6 +958,7 @@ export class SkyShadow extends SkyTintColorObject<SketchFormat.Shadow | SketchFo
   }
 
   fromJson(data: SketchFormat.Shadow | SketchFormat.InnerShadow) {
+    this.json = data;
     this.isInner = data._class === 'innerShadow';
     this.isEnabled = data.isEnabled;
     this.blurRadius = data.blurRadius;

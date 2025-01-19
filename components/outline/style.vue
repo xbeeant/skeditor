@@ -1,98 +1,80 @@
 <template>
-  <section :style="`width: ${width}px;`" class="outline node-properties">
-    <main class="" v-if="model">
+  <section v-if="model" :style="`width: ${width}px; position: absolute; right: 0;`" class="outline node-properties">
+    <main>
       <section class="prop-box">
         <dl class="item node-name">
           <dt>图层</dt>
           <dd class="cur-node-name">
             <div class="node-name non-export">
-              <div title="{{model.name}}">{{ model.name }}</div>
+              <div :title="model.name">{{ model.name }}</div>
             </div>
           </dd>
         </dl>
-        <h5>比例</h5>
+        <h5>位置</h5>
         <dl class="item loc">
           <dd>
             <span class="loc-name mid">X</span>
-            <div class="inp"
-              ><span title="{{model.frame.x}}dp">{{ model.frame.x }}dp</span>
+            <div class="inp">
+              <CopyableText :text="`${(model.frame.x * unit.scale).toFixed()}${unit.unit}`" />
             </div>
             <span class="loc-name">Y</span>
-            <div class="inp m2"
-              ><span title="{{model.frame.y}}dp">{{ model.frame.y }}dp</span>
+            <div class="inp m2">
+              <CopyableText :text="`${(model.frame.y * unit.scale).toFixed()}${unit.unit}`" />
             </div>
           </dd>
         </dl>
+        <h5>大小</h5>
         <dl class="item loc">
           <dd>
-            <span class="loc-name mid">W</span>
+            <span class="loc-name mid">宽度</span>
             <div class="inp">
-              <span title="{{model.frame.width}}dp">{{ model.frame.width }}dp</span>
+              <CopyableText :text="`${(model.frame.width * unit.scale).toFixed()}${unit.unit}`" />
             </div>
-            <span class="loc-name">H</span>
+            <span class="loc-name">高度</span>
             <div class="inp m2">
-              <span title="{{model.frame.height}}dp">{{ model.frame.height }}dp</span>
+              <CopyableText :text="`${(model.frame.height * unit.scale).toFixed()}${unit.unit}`" />
             </div>
           </dd>
         </dl>
-        <dl class="item">
-          <dt title="当前图层的不透明度">不透明度</dt>
+        <h5>属性</h5>
+        <dl class="item loc">
           <dd>
-            <div class="inp"><span title="100%">100%</span></div>
-            <div class="inp empty"></div>
+            <span class="loc-name mid">不透明度</span>
+            <div class="inp">
+              <CopyableText :text="`${(model.style.contextSettings.opacity * 100).toFixed()}%`" />
+            </div>
+            <span class="loc-name" v-if="model.fixedRadius">圆角</span>
+            <div class="inp m2" v-if="model.fixedRadius">
+              <CopyableText :text="`${(model.fixedRadius * unit.scale).toFixed()}${unit.unit}`" />
+            </div>
           </dd>
         </dl>
       </section>
-      <section v-if="model._class === 'text'">
+
+      <StyleGradient :fills="fills" />
+
+      <section v-if="model._class === 'Text'">
         <section class="prop-box">
           <h5>文本</h5>
           <dl class="item">
             <dt>字体</dt>
             <dd>
               <div class="inp">
-                <span
-                  title="{{model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.name}}"
-                >
-                  {{ model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.name }}
-                </span>
-              </div>
-            </dd>
-          </dl>
-          <dl class="item">
-            <dt>字重</dt>
-            <dd>
-              <div class="inp">
-                <span title="normal">normal</span>
-              </div>
-              <div class="inp m2">
-                <span
-                  title="{{model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.size}}"
-                >
-                  {{ model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.size }}
-                </span>
+                <CopyableText :text="`${model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.name}`" />
               </div>
             </dd>
           </dl>
           <dl class="item">
             <dt>前景色</dt>
             <dd>
-              <div class="container">
-                <div class="color">
-                  <i title="点击切换颜色类型" style="background-color: rgb(43, 44, 46)"></i>
-                  <span class="inp rgba"><span title="rgba(43, 44, 46, 1)">rgba(43, 44, 46, 1)</span></span>
-                </div>
-              </div>
+              <Color :color="{ json: model.style?.textStyle?.encodedAttributes.MSAttributedStringColorAttribute }" />
             </dd>
           </dl>
           <dl class="item">
             <dt>字号</dt>
             <dd>
               <div class="inp">
-                <span
-                  title="{{model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.size}}"
-                >
-                  {{ model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.size }}
-                </span>
+                <CopyableText :text="`${model.style.textStyle.encodedAttributes.MSAttributedStringFontAttribute.attributes.size}`" />
               </div>
               <div class="inp m2 empty"></div>
             </dd>
@@ -101,9 +83,7 @@
             <dt>行高</dt>
             <dd>
               <div class="inp">
-                <span title="{{model.style.textStyle.encodedAttributes.paragraphStyle.maximumLineHeight}}">
-                  {{ model.style.textStyle.encodedAttributes.paragraphStyle.maximumLineHeight }}
-                </span>
+                <CopyableText :text="`${model.style.textStyle.encodedAttributes.paragraphStyle.maximumLineHeight || '自动'}`" />
               </div>
               <div class="inp m2 empty"></div>
             </dd>
@@ -111,7 +91,11 @@
           <dl class="item">
             <dt>对齐方式</dt>
             <dd>
-              <div class="inp"><span title="left">left</span></div>
+              <div class="inp">
+                <span title="left">
+                  <CopyableText :text="`${textBehaviour[(model as SkyText).textBehaviour]}`" />
+                </span>
+              </div>
               <div class="inp m2 empty"></div>
             </dd>
           </dl>
@@ -120,58 +104,11 @@
         <dl class="item mult">
           <dd>
             <div class="inp multiple">
-              <span title="{{model.attributedString.string}}">
-                {{ model.attributedString.string }}
-              </span>
+              <CopyableText :text="`${model.attributedString.string}`" />
             </div>
           </dd>
         </dl>
       </section>
-      <section class="prop-box">
-        <h5 class="fill-title"><span>填充</span></h5>
-        <div>
-          <dl class="item">
-            <dt>线性渐变</dt>
-            <dd>
-              <div class="inp"><span title="linear">linear</span></div>
-              <div class="inp m2"><span title="90deg">90deg</span></div>
-            </dd>
-          </dl>
-          <ul class="fill-list">
-            <li>
-              <div class="title">0%</div>
-              <dl class="item">
-                <dd>
-                  <div class="container">
-                    <div class="color">
-                      <i title="点击切换颜色类型" style="background-color: rgb(255, 237, 99)"></i>
-                      <span class="inp rgba">
-                        <span title="rgba(255, 237, 99, 1)">rgba(255, 237, 99, 1)</span>
-                      </span>
-                    </div>
-                  </div>
-                </dd>
-              </dl>
-            </li>
-            <li>
-              <div class="title">100%</div>
-              <dl class="item">
-                <dd>
-                  <div class="container">
-                    <div class="color">
-                      <i title="点击切换颜色类型" style="background-color: rgb(233, 193, 26)"></i>
-                      <span class="inp rgba">
-                        <span title="rgba(233, 193, 26, 1)">rgba(233, 193, 26, 1)</span>
-                      </span>
-                    </div>
-                  </div>
-                </dd>
-              </dl>
-            </li>
-          </ul>
-        </div>
-      </section>
-      <div></div>
     </main>
     <Sash :side="'left'" @dragStart="onDragStart" @offset="onOffset" />
   </section>
@@ -181,16 +118,31 @@
 import Sash from '~/components/ui/sash.vue';
 import { setupLeftOutline } from './outline-business';
 import { EditorState } from '~/components/editor-state';
-import { nextTick, watch, ref } from 'vue';
+import { nextTick, ref, watch } from 'vue';
 import { AnyLayer } from '@sketch-hq/sketch-file-format-ts/dist/esm/types';
+import { SkyBaseLayer, SkyFill, SkyText } from '~/lib/editor/model';
+import Color from '~/components/outline/style-color.vue';
+import StyleGradient from '~/components/outline/style-gradient.vue';
+import CopyableText from '~/components/outline/copyable-text.vue';
 
 const { width, onDragStart, onOffset } = setupLeftOutline();
-const { selectedLayerIdRef } = EditorState.shared;
-let model = ref<AnyLayer | undefined>();
+const { selectedLayerIdRef, unit } = EditorState.shared;
+const model = ref<SkyBaseLayer<AnyLayer> | undefined>();
+const fills = ref<SkyFill[] | undefined>();
+
+const textBehaviour = {
+  0: '自动宽度',
+  1: '自动高度',
+  2: '固定尺寸',
+};
+
 watch(selectedLayerIdRef, () => {
   nextTick(() => {
-    const selectedLayerModel = EditorState.shared.selectedLayerModel;
-    model.value = selectedLayerModel?.json as AnyLayer | undefined;
+    model.value = EditorState.shared.selectedLayerModel;
+    if (model.value) {
+      fills.value = model.value.style?.fills || [];
+      console.log(model.value, model.value.style?.fills, fills.value, model.value.refModel);
+    }
   });
 });
 </script>
@@ -205,34 +157,25 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties {
-  height: 100%;
+  height: calc(100% - 36px);
+  top: 36px;
   background: #fff;
-  -webkit-transition: -webkit-transform 0.2s ease-in-out;
   transition: -webkit-transform 0.2s ease-in-out;
 }
 
 .node-properties h5 {
   height: 32px;
   background: #f8f8f8;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   padding-left: 15px;
   font-size: 12px;
   color: #333;
   margin: 8px 0;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
   user-select: none;
 }
 
 .node-properties h5.mult-h5 {
-  -webkit-box-pack: justify;
-  -ms-flex-pack: justify;
   justify-content: space-between;
   padding-right: 17px;
 }
@@ -247,14 +190,12 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties.on {
-  -webkit-transform: translateZ(0);
   transform: translateZ(0);
-  -webkit-box-shadow: -4px 2px 6px 0 rgba(59, 83, 126, 0.12);
   box-shadow: -4px 2px 6px 0 rgba(59, 83, 126, 0.12);
 }
 
 .node-properties > main {
-  height: calc(100% - 48px);
+  height: 100%;
   overflow: hidden;
   overflow-y: auto;
 }
@@ -279,7 +220,6 @@ watch(selectedLayerIdRef, () => {
   border: 1px solid #b4b4b4;
   border-width: 1px 1px 0 0;
   content: '';
-  -webkit-transform: rotate(45deg);
   transform: rotate(45deg);
   width: 4px;
   height: 4px;
@@ -300,11 +240,7 @@ watch(selectedLayerIdRef, () => {
 
 .node-properties dl.item {
   height: 36px;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   font-size: 14px;
   color: #333;
@@ -320,19 +256,14 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties dl.item.loc .loc-name {
-  width: 36px;
+  min-width: 36px;
+  max-width: 48px;
+  padding-right: 5px;
   font-size: 12px;
   color: #6b7980;
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
   display: inline-flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
   justify-content: center;
-  -webkit-box-sizing: content-box;
   box-sizing: content-box;
   white-space: nowrap;
 }
@@ -343,13 +274,7 @@ watch(selectedLayerIdRef, () => {
 
 .node-properties dl.item.loc .loc-name.mid,
 .node-properties dl.item.loc .loc-name.start {
-  -webkit-box-pack: start;
-  -ms-flex-pack: start;
   justify-content: start;
-}
-
-.node-properties dl.item.loc .loc-name.mid {
-  width: 26px;
 }
 
 .node-properties dl.item.loc .m2 {
@@ -357,8 +282,6 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties dl.item.mult {
-  -webkit-box-align: start;
-  -ms-flex-align: start;
   align-items: flex-start;
   margin-bottom: 10px;
   height: auto;
@@ -374,34 +297,26 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties dl.item > dd {
-  -ms-flex: 1;
   flex: 1;
   width: 0;
 }
 
 .node-properties .inp,
 .node-properties dl.item > dd {
-  -webkit-box-flex: 1;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
 }
 
 .node-properties .inp {
   height: 22px;
   line-height: 22px;
-  background: #fff;
-  border-radius: 4px;
   border: 1px solid #e7e7e7;
   background: #f6f6f6;
   border-radius: 3px;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
   white-space: nowrap;
   color: #333;
-  -ms-flex: 1;
   flex: 1;
+  margin-right: 8px;
   overflow: hidden;
 }
 
@@ -411,16 +326,12 @@ watch(selectedLayerIdRef, () => {
 }
 
 .node-properties .inp span {
-  -webkit-box-sizing: border-box;
   box-sizing: border-box;
   padding: 0 8px;
   text-overflow: ellipsis;
   display: block;
   width: 100%;
   overflow: hidden;
-  -webkit-user-select: all;
-  -moz-user-select: all;
-  -ms-user-select: all;
   user-select: all;
   font-size: 13px;
 }
@@ -441,9 +352,6 @@ watch(selectedLayerIdRef, () => {
 
 .node-properties .inp.multiple > span {
   padding: 12px;
-  -webkit-user-select: initial;
-  -moz-user-select: initial;
-  -ms-user-select: initial;
   user-select: initial;
 }
 
@@ -473,8 +381,6 @@ watch(selectedLayerIdRef, () => {
   width: 52px;
   min-width: 52px;
   white-space: nowrap;
-  -webkit-box-flex: initial;
-  -ms-flex: initial;
   flex: initial;
 }
 
@@ -483,57 +389,9 @@ watch(selectedLayerIdRef, () => {
   width: auto;
 }
 
-.fill-list {
-  position: relative;
-}
-
-.fill-list:before {
-  content: '';
-  width: 3px;
-  height: calc(100% - 36px);
-  position: absolute;
-  -webkit-box-shadow: 0 0 4px 0 rgba(144, 153, 172, 0.5);
-  box-shadow: 0 0 4px 0 rgba(144, 153, 172, 0.5);
-  background: #fff;
-  left: 18px;
-  top: 15px;
-}
-
-.fill-list li {
-  position: relative;
-  margin-left: 20px;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
-.fill-list li .title {
-  width: 56px;
-  text-align: right;
-}
-
-.fill-list li:before {
-  content: '';
-  width: 9px;
-  height: 9px;
-  position: absolute;
-  -webkit-box-shadow: 0 0 4px 0 rgba(144, 153, 172, 0.5);
-  box-shadow: 0 0 4px 0 rgba(144, 153, 172, 0.5);
-  background: #fff;
-  border-radius: 50%;
-  left: -5px;
-  top: 13px;
-}
-
 .draw-control-sub .box .colors {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
+
   align-items: center;
 }
 
@@ -554,14 +412,8 @@ watch(selectedLayerIdRef, () => {
   cursor: pointer;
   position: relative;
   z-index: 0;
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
   align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
   justify-content: center;
 }
 
@@ -575,19 +427,6 @@ watch(selectedLayerIdRef, () => {
 .draw-control-sub .box .colors li.on,
 .draw-control-sub .box .colors li:hover {
   border-color: #1886ff;
-}
-
-.colors {
-  position: absolute;
-  top: -60px;
-  left: 30px;
-  z-index: 9;
-  background: #fff;
-  -webkit-box-shadow: 0 0 6px 0 #a7c0dc;
-  box-shadow: 0 0 6px 0 #a7c0dc;
-  border-radius: 2px;
-  border: 1px solid #c7c7c7;
-  padding: 5px 0;
 }
 
 .colors li {
@@ -608,47 +447,7 @@ watch(selectedLayerIdRef, () => {
   color: #fff;
 }
 
-.item dd .container .swatch,
-.item dd .container {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
-.item dd .container .swatch {
-  color: #828282;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  height: 16px;
-  overflow: hidden;
-}
-
-.item dd .container .swatch .swatch-text {
-  font-size: 12px;
-  -webkit-transform: scale(0.83);
-  transform: scale(0.83);
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.item dd .color {
-  display: -webkit-inline-box;
-  display: -ms-inline-flexbox;
-  display: inline-flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-}
-
 .item dd .color i {
-  -ms-flex-negative: 0;
   flex-shrink: 0;
   height: 22px;
   width: 22px;
@@ -671,5 +470,11 @@ watch(selectedLayerIdRef, () => {
 
 .item dd .color i:hover:after {
   background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAsCAMAAABWi7jCAAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAA4ZVhJZk1NACoAAAAIAAGHaQAEAAAAAQAAABoAAAAAAAKgAgAEAAAAAQAAABagAwAEAAAAAQAAACwAAAAA1HixRwAAAEVQTFRF7+/v+Pj4o6Oj8vLy5ubm5ubm5+fn5ubmTGlx5+fnw8PDs7Oz2NjYwsLCyMjI9vb27u7u6Ojo3d3d7Ozszs7OuLi40tLSfzvbjQAAAAp0Uk5TEP///4/i/5EA4JYQ3eEAAACTSURBVCjP3dPLEoIwDAXQPLRA+gAV/f9PtZoyYBtGx51meRa3SduAa+sAPTirIDNWNV5cZzCObrAYc8rvc0oWC1HkhoVEyHPFWRFvxRdm/1DEoF4466xR6oVPFJYmAp3XkGntmb+echMy4dsjPUWjQWRRfx3nOXz2VA2vHunK1sXK58/wb59ts1LH/QXcWdemOujvrZ0LeooD95oAAAAASUVORK5CYII=);
+}
+
+.unit-box .sub-title {
+  font-size: 12px;
+  background: #000;
+  color: #3a3a3a;
 }
 </style>

@@ -18,7 +18,8 @@ export class SkyModel extends Disposable {
   private symbolRegistry = new Map<string, SkySymbolMaster>();
   private styleRegistry = new Map<string, SkyStyle>();
 
-  private foreignSymbols: SkySymbolMaster[] = [];
+  foreignSymbols: SkySymbolMaster[] = [];
+  sharedSwatches: SketchFormat.Swatch[] = [];
 
   imageLoaded$ = new Subject();
 
@@ -46,6 +47,7 @@ export class SkyModel extends Disposable {
     if (!this.isSupportedVersion) return;
 
     this.collectSymbols();
+    this.collectSharedSwatches();
     this.collectStyles();
     await this.initPages();
   }
@@ -63,6 +65,12 @@ export class SkyModel extends Disposable {
   private collectSymbols() {
     this.data.foreignSymbols.forEach((symbol) => {
       this.foreignSymbols.push(new SkySymbolMaster().fromJson(symbol.symbolMaster));
+    });
+  }
+
+  private collectSharedSwatches() {
+    this.data.sharedSwatches?.objects.forEach((swatch) => {
+      this.sharedSwatches.push(swatch);
     });
   }
 

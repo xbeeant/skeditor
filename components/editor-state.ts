@@ -11,6 +11,8 @@ export class EditorState {
 
   showSidebar = localStorageRef('WorkbenchShowSidebar', true);
   showStylebar = localStorageRef('WorkbenchShowStylebar', true);
+  showUnitbox = localStorageRef('WorkbenchShowUnitbox', false);
+  unit = localStorageRef('WorkbenchUnit', { name: '网页 - px', unit: 'px', scale: 1 });
 
   bindings = [] as Subscription[];
 

@@ -10,8 +10,9 @@
       <div class="canvas-container" ref="canvasContainer">
         <EmptyPlaceholder v-if="isEmpty" @pick="onPickFile" />
       </div>
-      <Style v-if="styleBarOpen" />
     </div>
+    <Style v-show="pages.length > 0 && styleBarOpen" />
+    <UnitBox v-show="unitboxOpen" />
   </section>
 </template>
 <script setup lang="ts">
@@ -23,6 +24,7 @@ import Nav from './nav.vue';
 import Style from './outline/style.vue';
 import { localStorageRef } from './composables/localstorage';
 import { ref, onMounted } from 'vue';
+import UnitBox from '~/components/outline/unit-box.vue';
 
 const isEmpty = ref(true);
 const list = ref([]);
@@ -31,6 +33,7 @@ const selectedFile = localStorageRef('LastChooseFile', '');
 const selectedPage = localStorageRef('LastChosePage', '');
 const sideBarOpen = EditorState.shared.showSidebar;
 const styleBarOpen = EditorState.shared.showStylebar;
+const unitboxOpen = EditorState.shared.showUnitbox;
 
 const canvasContainer = ref();
 

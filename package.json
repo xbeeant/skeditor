@@ -11,9 +11,11 @@
     "@skeditor/canvaskit-wasm": "0.28.1",
     "@sketch-hq/sketch-file-format-ts": "^6.1.1",
     "bowser": "1.9.2",
+    "copy-to-clipboard": "^3.3.3",
     "debug": "2.6.9",
     "jszip": "^3.10.1",
     "rxjs": "6.2.1",
+    "tinycolor2": "^1.6.0",
     "ts-invariant": "^0.6.0",
     "vue-virtual-scroller": "^2.0.0-alpha.1",
     "vue3-perfect-scrollbar": "^1.5.5"
