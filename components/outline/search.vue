@@ -1,11 +1,22 @@
 <template>
   <div class="search">
     <img alt="" class="search-icon" src="~@/assets/imgs/img.magnifying.glass.triangle.down.17_Normal@2x.png" />
-    <input class="search-input" :placeholder="'Search Layers'" />
+    <input class="search-input" :placeholder="'Search Layers'" @blur="queryLayer" @keydown.enter="queryLayer" />
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { EditorState } from '~/components/editor-state';
+
+const queryLayer = (e ) => {
+  const value = e.target.value;
+  const layer = EditorState.shared.selectedPageModel?.queryLayer(value);
+  if (layer) {
+    EditorState.shared.focusLayer(layer);
+    EditorState.shared.selectLayer(layer);
+  }
+}
+</script>
 <style scoped>
 .search {
   margin-top: 8px;
