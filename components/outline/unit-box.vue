@@ -89,28 +89,4 @@ const changeUnit = (e: Event) => {
   height: 100%;
   top: 36px;
 }
-
-.sub-title {
-  height: 32px;
-  background: #f8f8f8;
-  display: flex;
-  align-items: center;
-  padding-left: 15px;
-  font-size: 12px;
-  color: #333;
-  margin: 8px 0;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-.unit-box label {
-  cursor: pointer;
-}
-.unit-box .sub-title,
-.unit-box label {
-  display: flex;
-  padding: 8px 20px;
-}
 </style>

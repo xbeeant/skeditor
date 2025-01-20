@@ -1,120 +1,50 @@
 <script setup lang="ts">
 import { AnyLayer, FillType } from '@sketch-hq/sketch-file-format-ts/dist/esm/types';
 import Color from '~/components/outline/style-color.vue';
-import { SkyBaseLayer, SkyFill } from '~/lib/editor/model';
-import { EditorState } from '~/components/editor-state';
-import { nextTick, ref, watch } from 'vue';
+import { SketchFormat, SkyBaseLayer } from '~/lib/editor/model';
+import { computed } from 'vue';
 
-const { selectedLayerIdRef } = EditorState.shared;
-const model = ref<SkyBaseLayer<AnyLayer> | undefined>();
-const fills = ref<SkyFill[] | undefined>();
+const props = defineProps<{ model: SkyBaseLayer<AnyLayer>; swatches: SketchFormat.Swatch[] }>();
 
-watch(selectedLayerIdRef, () => {
-  nextTick(() => {
-    model.value = EditorState.shared.selectedLayerModel;
-    if (model.value) {
-      fills.value = model.value.style?.fills || [];
-    }
-  });
+const swatches = computed(() => {
+  return props['swatches'];
+});
+
+const fills = computed(() => {
+  return props['model']?.style?.fills || [];
 });
 </script>
 
 <template>
-  <section class="prop-box" v-if="fills && fills.length > 0">
+  <section class="prop-box" v-show="fills && fills.length > 0">
     <h5 class="fill-title"><span>填充</span></h5>
     <div v-for="fill in fills">
-      <dl class="item" v-if="fill.fillType === FillType.Gradient">
-        <dt>渐变</dt>
-      </dl>
-      <ul class="fill-list" v-if="fill.fillType === FillType.Gradient">
-        <li v-for="gradientStop in fill.gradient.stops">
-          <div title="title" class="title">{{ gradientStop.position * 100 + '%' }}</div>
+      <div v-if="fill.isEnabled">
+        <dl class="item" v-if="fill.fillType === FillType.Gradient">
+          <dt>渐变</dt>
+        </dl>
+        <ul class="fill-list" v-if="fill.fillType === FillType.Gradient">
+          <li v-for="gradientStop in fill.gradient.stops">
+            <div class="title">{{ gradientStop.position * 100 + '%' }}</div>
+            <dl class="item color-item">
+              <dd>
+                <div class="container"> <Color :color="{ json: gradientStop.color.json }" :swatches="swatches" /> </div>
+              </dd>
+            </dl>
+          </li>
+        </ul>
+        <dl class="item" v-if="fill.fillType === FillType.Pattern">
+          <dt>图案</dt>
+        </dl>
+        <dl class="item color-item" v-if="fill.fillType === FillType.Color">
+          <dt>颜色</dt>
           <dd>
-            <div class="inp m2"> <Color :color="{ json: gradientStop.color.json }" /> </div>
+            <Color :color="fill.color" :swatches="swatches" />
           </dd>
-        </li>
-      </ul>
-      <dl class="item" v-if="fill.fillType === FillType.Pattern">
-        <dt>图案</dt>
-      </dl>
-      <dl class="item" v-if="fill.fillType === FillType.Color">
-        <dt>颜色</dt>
-        <dd>
-          <Color :color="fill.color" />
-        </dd>
-      </dl>
+        </dl>
+      </div>
     </div>
   </section>
 </template>
 
-<style scoped>
-h5 {
-  height: 32px;
-  background: #f8f8f8;
-  display: flex;
-  align-items: center;
-  padding-left: 15px;
-  font-size: 12px;
-  color: #333;
-  margin: 8px 0;
-  user-select: none;
-}
-
-dl.item {
-  height: 36px;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  color: #333;
-  padding: 0 15px;
-}
-
-dl.item > dt {
-  min-width: 32px;
-  white-space: nowrap;
-  height: 22px;
-  line-height: 22px;
-  color: #6b7980;
-  font-size: 12px;
-}
-
-.fill-list {
-  position: relative;
-}
-
-.fill-list:before {
-  content: '';
-  width: 3px;
-  height: calc(100% - 36px);
-  position: absolute;
-  box-shadow: 0 0 4px 0 rgba(144, 153, 172, 0.5);
-  background: #fff;
-  left: 18px;
-  top: 15px;
-}
-
-.fill-list li {
-  position: relative;
-  margin-left: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.fill-list li .title {
-  width: 56px;
-  text-align: right;
-  padding-left: 5px;
-}
-
-.fill-list li:before {
-  content: '';
-  width: 9px;
-  height: 9px;
-  position: absolute;
-  box-shadow: 0 0 4px 0 rgba(144, 153, 172, 0.5);
-  background: #fff;
-  border-radius: 50%;
-  left: -5px;
-  top: 13px;
-}
-</style>
+<style scoped></style>

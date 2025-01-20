@@ -1,7 +1,7 @@
 <template>
   <div class="copyable-text" @click="copyText">
     <span>{{ text }}</span>
-    <span v-if="showTooltip" class="tooltip">已复制</span>
+    <span v-if="showTooltip" class="pop-tip-text"><p>已复制</p></span>
   </div>
 </template>
 
@@ -17,7 +17,7 @@ const showTooltip = ref(false);
 
 const copyText = async () => {
   try {
-    copy(props.text)
+    copy(props.text);
     showTooltip.value = true;
     setTimeout(() => {
       showTooltip.value = false;
@@ -32,18 +32,5 @@ const copyText = async () => {
 .copyable-text {
   position: relative;
   cursor: pointer;
-  display: inline-block;
-}
-
-.tooltip {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: #ffffff;
-  border-radius: 4px;
-  white-space: nowrap;
-  margin-bottom: 5px;
-  opacity: 0.9;
 }
 </style>

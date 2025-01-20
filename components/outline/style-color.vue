@@ -1,31 +1,41 @@
 <script setup lang="ts">
 import { SkyColor } from '~/lib/editor/model';
-import { EditorState } from '~/components/editor-state';
 import tinycolor from 'tinycolor2';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import CopyableText from '~/components/outline/copyable-text.vue';
+import SketchFormat from '@sketch-hq/sketch-file-format-ts';
 
-const colorSpaces = ['rgb', 'prgb', 'hex8', 'hsl', 'hsv', 'name', ];
+const colorSpaces = ['rgb', 'prgb', 'hex8', 'hsl', 'hsv', 'name'];
 const colorSpacesIndex = ref<number>(0);
 const colorType = ref(colorSpaces[colorSpacesIndex.value]);
 
-const props = defineProps<{ color: SkyColor }>();
-const modelRef = EditorState.shared.modelRef;
-const swatches = modelRef.value?.sharedSwatches || [];
-const skyColor =
-  (props.color as SkyColor) ||
-  ({
-    json: { red: 0, green: 0, blue: 0, _class: 'color', alpha: 1, swatchID: undefined },
-  } as SkyColor);
-const color = tinycolor.fromRatio({
-  r: skyColor.json.red,
-  g: skyColor.json.green,
-  b: skyColor.json.blue,
-  a: skyColor.json.alpha,
-});
-let colorStr = ref<string>(color.toString(colorType.value));
+const props = defineProps<{ color: SkyColor; swatches?: SketchFormat.Swatch[] }>();
+const swatches = props.swatches;
 
-const swatch = swatches.find((s) => s.do_objectID === color.swatchID) || {};
+let colorStr = ref<string>('');
+
+const colorInfo = computed(() => {
+  const skyColor =
+    (props.color as SkyColor) ||
+    ({
+      json: { red: 0, green: 0, blue: 0, _class: 'color', alpha: 1, swatchID: undefined },
+    } as SkyColor);
+
+  const color = tinycolor.fromRatio({
+    r: skyColor.json.red,
+    g: skyColor.json.green,
+    b: skyColor.json.blue,
+    a: skyColor.json.alpha,
+  });
+  colorStr.value = color.toString(colorType.value);
+  const swatch = (swatches || []).find((s) => s.do_objectID === skyColor.json.swatchID) || {};
+  return {
+    swatch,
+    color,
+  };
+});
+
+const { swatch, color } = colorInfo.value;
 
 const changeColorSpace = () => {
   colorSpacesIndex.value = (colorSpacesIndex.value + 1) % colorSpaces.length;
@@ -34,15 +44,13 @@ const changeColorSpace = () => {
 };
 </script>
 <template>
-  <div class="color-container">
-    <div class="color">
-      <label :onclick="changeColorSpace">
-        <em> <i title="点击切换颜色类型" :style="{ backgroundColor: colorStr }">{{colorSpaces[colorSpacesIndex.value]}}</i></em>
-      </label>
-      <span class="inp"><CopyableText :text="colorStr" /></span>
-    </div>
-    <span>{{ swatch.name }}</span>
+  <div class="color">
+    <i title="点击切换颜色类型" :onclick="changeColorSpace" :style="{ backgroundColor: colorStr }">
+      {{ colorSpaces[colorSpacesIndex.value] }}
+    </i>
+    <span class="inp hexa"><CopyableText :text="colorStr" /></span>
   </div>
+  <span style="font-size: 12px; color: #a4a4a4">{{ swatch.name }}</span>
 </template>
 
 <style scoped>
@@ -53,38 +61,4 @@ const changeColorSpace = () => {
   align-items: flex-start;
 }
 
-.color {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-content: center;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.color label {
-  margin-right: 8px;
-}
-
-.color .inp {
-  height: 22px;
-  line-height: 22px;
-  border: 1px solid #e7e7e7;
-  background: #f6f6f6;
-  border-radius: 3px;
-  white-space: nowrap;
-  color: #333;
-  overflow: hidden;
-  padding: 0 8px;
-}
-
-.color label,
-.color label em,
-.color label em i {
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  display: block;
-}
 </style>
